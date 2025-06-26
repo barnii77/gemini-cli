@@ -35,6 +35,7 @@ import {
   logUserPrompt,
   AuthType,
 } from '@google/gemini-cli-core';
+import { Content } from '@google/genai';
 import { validateAuthMethod } from './config/auth.js';
 import { setMaxSizedBoxDebugging } from './ui/components/shared/MaxSizedBox.js';
 
