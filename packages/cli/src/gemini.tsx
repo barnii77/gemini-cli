@@ -15,7 +15,6 @@ import os from 'node:os';
 import { spawn } from 'node:child_process';
 import { start_sandbox } from './utils/sandbox.js';
 import fs, { existsSync } from 'node:fs';
-import path from 'node:path';
 import {
   LoadedSettings,
   loadSettings,
@@ -208,11 +207,7 @@ export async function main() {
   );
 
   // Optionally load prior session history via --session <file>
-  let sessionPath: string | undefined;
-  const idx = process.argv.indexOf('--session');
-  if (idx !== -1 && process.argv[idx + 1]) {
-    sessionPath = process.argv[idx + 1];
-  }
+  const { session: sessionPath } = argv as { session?: string };
   if (sessionPath && existsSync(sessionPath)) {
     try {
       const raw = await fs.promises.readFile(sessionPath, 'utf8');
