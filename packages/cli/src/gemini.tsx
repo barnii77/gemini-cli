@@ -207,7 +207,7 @@ export async function main() {
   );
 
   // Optionally load prior session history via --session <file>
-  const { session: sessionPath } = argv as { session?: string };
+  const { session: sessionPath } = process.argv as { session?: string };
   if (sessionPath && existsSync(sessionPath)) {
     try {
       const raw = await fs.promises.readFile(sessionPath, 'utf8');
