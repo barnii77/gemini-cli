@@ -53,6 +53,8 @@ interface CliArgs {
   telemetryTarget: string | undefined;
   telemetryOtlpEndpoint: string | undefined;
   telemetryLogPrompts: boolean | undefined;
+  /** Path to JSON file for loading/saving headless chat history */
+  session: string | undefined;
 }
 
 async function parseArguments(): Promise<CliArgs> {
@@ -128,13 +130,17 @@ async function parseArguments(): Promise<CliArgs> {
       description: 'Enables checkpointing of file edits',
       default: false,
     })
+    .option('session', {
+      type: 'string',
+      description: 'Path to a JSON file for loading/saving headless chat history',
+    })
     .version(await getCliVersion()) // This will enable the --version flag based on package.json
     .alias('v', 'version')
     .help()
     .alias('h', 'help')
     .strict().argv;
 
-  return argv;
+  return argv as CliArgs;
 }
 
 // This function is now a thin wrapper around the server's implementation.

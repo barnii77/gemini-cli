@@ -14,6 +14,8 @@ import v8 from 'node:v8';
 import os from 'node:os';
 import { spawn } from 'node:child_process';
 import { start_sandbox } from './utils/sandbox.js';
+import fs, { existsSync } from 'node:fs';
+import path from 'node:path';
 import {
   LoadedSettings,
   loadSettings,
@@ -205,7 +207,33 @@ export async function main() {
     settings,
   );
 
+  // Optionally load prior session history via --session <file>
+  let sessionPath: string | undefined;
+  const idx = process.argv.indexOf('--session');
+  if (idx !== -1 && process.argv[idx + 1]) {
+    sessionPath = process.argv[idx + 1];
+  }
+  if (sessionPath && existsSync(sessionPath)) {
+    try {
+      const raw = await fs.promises.readFile(sessionPath, 'utf8');
+      const hist = JSON.parse(raw) as Content[];
+      await nonInteractiveConfig.getGeminiClient().getChat().setHistory(hist);
+    } catch (e) {
+      console.warn(`Failed to load session ${sessionPath}:`, e);
+    }
+  }
+
   await runNonInteractive(nonInteractiveConfig, input);
+
+  // Auto-save updated history
+  if (sessionPath) {
+    try {
+      const updated = await nonInteractiveConfig.getGeminiClient().getChat().getHistory();
+      await fs.promises.writeFile(sessionPath, JSON.stringify(updated, null, 2));
+    } catch (e) {
+      console.warn(`Failed to save session ${sessionPath}:`, e);
+    }
+  }
   process.exit(0);
 }
 
