@@ -120,6 +120,9 @@ export async function runNonInteractive(
             toolRegistry,
             abortController.signal,
           );
+          if (options.jsonMode) {
+            process.stdout.write(JSON.stringify(toolResponse) + '\n');
+          }
 
           if (toolResponse.error) {
             const isToolNotFound = toolResponse.error.message.includes(
