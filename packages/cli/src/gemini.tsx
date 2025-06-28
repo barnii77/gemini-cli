@@ -7,7 +7,7 @@
 import React from 'react';
 import { render } from 'ink';
 import { AppWrapper } from './ui/App.js';
-import { loadCliConfig } from './config/config.js';
+import { parseArguments, loadCliConfig } from './config/config.js';
 import { readStdin } from './utils/readStdin.js';
 import { basename } from 'node:path';
 import v8 from 'node:v8';
@@ -207,8 +207,9 @@ export async function main() {
     settings,
   );
 
-  // Optionally load prior session history via --session <file>
-  const { session: sessionPath } = process.argv as { session?: string };
+  // Optionally load prior session history via --session <file> and allow enabling json mode via --json
+  const argv = await parseArguments();
+  const { session: sessionPath, json: jsonMode } = argv as { session?: string; json?: boolean };
   if (sessionPath && existsSync(sessionPath)) {
     try {
       const raw = await fs.promises.readFile(sessionPath, 'utf8');
@@ -219,7 +220,7 @@ export async function main() {
     }
   }
 
-  await runNonInteractive(nonInteractiveConfig, input);
+  await runNonInteractive(nonInteractiveConfig, input, { sessionPath, jsonMode });
 
   // Auto-save updated history
   if (sessionPath) {

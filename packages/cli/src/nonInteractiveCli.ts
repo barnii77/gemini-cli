@@ -4,6 +4,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
+import fs from 'node:fs';
 import {
   Config,
   ToolCallRequestInfo,
@@ -46,6 +47,7 @@ function getResponseText(response: GenerateContentResponse): string | null {
 export async function runNonInteractive(
   config: Config,
   input: string,
+  options: { sessionPath?: string; jsonMode?: boolean },
 ): Promise<void> {
   // Handle EPIPE errors when the output is piped to a command that closes early.
   process.stdout.on('error', (err: NodeJS.ErrnoException) => {
@@ -81,9 +83,19 @@ export async function runNonInteractive(
           console.error('Operation cancelled.');
           return;
         }
-        const textPart = getResponseText(resp);
-        if (textPart) {
-          process.stdout.write(textPart);
+        if (options.jsonMode) {
+          process.stdout.write(JSON.stringify(resp) + '\n');
+        } else {
+          const textPart = getResponseText(resp);
+          if (textPart) process.stdout.write(textPart);
+        }
+        // save after each partial response
+        if (options.sessionPath) {
+          const hist = await config.getGeminiClient().getChat().getHistory();
+          await fs.promises.writeFile(
+            options.sessionPath,
+            JSON.stringify(hist, null, 2),
+          );
         }
         if (resp.functionCalls) {
           functionCalls.push(...resp.functionCalls);

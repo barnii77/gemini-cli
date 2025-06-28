@@ -39,7 +39,7 @@ const logger = {
   error: (...args: any[]) => console.error('[ERROR]', ...args),
 };
 
-interface CliArgs {
+export interface CliArgs {
   model: string | undefined;
   sandbox: boolean | string | undefined;
   'sandbox-image': string | undefined;
@@ -55,9 +55,10 @@ interface CliArgs {
   telemetryLogPrompts: boolean | undefined;
   /** Path to JSON file for loading/saving headless chat history */
   session: string | undefined;
+  json: boolean | undefined;
 }
 
-async function parseArguments(): Promise<CliArgs> {
+export async function parseArguments(): Promise<CliArgs> {
   const argv = await yargs(hideBin(process.argv))
     .option('model', {
       alias: 'm',
@@ -129,6 +130,14 @@ async function parseArguments(): Promise<CliArgs> {
       type: 'boolean',
       description: 'Enables checkpointing of file edits',
       default: false,
+    })
+    .option('session', {
+      type: 'string',
+      description: 'Path to a JSON file for loading/saving headless chat history',
+    })
+    .option('json', {
+      type: 'boolean',
+      description: 'Emit one JSON object per API event (function calls / partial responses)',
     })
     .option('session', {
       type: 'string',
